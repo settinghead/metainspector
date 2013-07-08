@@ -77,7 +77,12 @@ module MetaInspector
 
     # Returns the parsed document meta rss link
     def feed
-      @feed ||= (parsed_feed('rss') || parsed_feed('atom'))
+      # @feed ||= (parsed_feed('rss') || parsed_feed('atom'))
+      @feed = feeds.first
+    end
+
+    def feeds
+      @feeds = parsed_feeds('rss') + parsed_feeds('atom')
     end
 
     # Returns the charset from the meta tags, looking for it in the following order:
@@ -197,6 +202,15 @@ module MetaInspector
     def parsed_feed(format)
       feed = parsed_document.search("//link[@type='application/#{format}+xml']").first
       feed ? absolutify_url(feed.attributes['href'].value) : nil
+    end
+
+    def parsed_feeds(format)
+      feeds = parsed_document.search("//link[@type='application/#{format}+xml']")
+      result = []
+      feeds.each do |feed|
+        result << absolutify_url(feed.attributes['href'].value) if feed
+      end
+      result
     end
 
     def parsed_links
